@@ -25,7 +25,17 @@ public class ConsigmentDTO {
 		this.timestamp = timestamp;
 	}
 
+	public String location;
+
 	public String timestamp;
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getLocation() {
+		return location;
+	}
 
 	public String getBoxId() {
 		return boxId;
@@ -43,4 +53,15 @@ public class ConsigmentDTO {
 		return timestamp;
 	}
 
+	public ConsigmentDTO(String boxId, String parent, String child, String location, String timestamp) {
+		this.boxId = boxId;
+		this.parent = parent;
+		this.child = child;
+		this.location = location;
+		this.timestamp = timestamp;
+	}
+
+	public ConsigmentDTO() {
+
+	}
 }

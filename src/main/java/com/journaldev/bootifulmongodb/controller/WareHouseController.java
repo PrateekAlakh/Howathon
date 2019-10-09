@@ -55,5 +55,18 @@ public class WareHouseController {
 	          consignmentRepo.createConsignment(consigmentDTO);
 	          return consignmentCommandService.createConsignment(consigmentDTO);
 	    }
-	
+
+
+
+	@RequestMapping(value = "link", method = RequestMethod.POST)
+	public void link(@RequestBody ConsigmentDTO consigment){
+		consignmentRepo.linkConsignment(consigment);
+	}
+
+
+	@RequestMapping(value = "delink", method = RequestMethod.POST)
+	public void delink(@RequestBody ConsigmentDTO consigment){
+		consignmentRepo.deLinkConsignment(consigment);
+	}
+
 }
