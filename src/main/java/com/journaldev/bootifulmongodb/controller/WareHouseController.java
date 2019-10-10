@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.journaldev.bootifulmongodb.dal.ConsignmentRepo;
 import com.journaldev.bootifulmongodb.dto.commands.ConsigmentDTO;
+import com.journaldev.bootifulmongodb.dto.commands.TrackingDTO;
 import com.journaldev.bootifulmongodb.model.Consignment;
 import com.journaldev.bootifulmongodb.services.commands.ConsignmentCommandService;
 
@@ -69,4 +71,24 @@ public class WareHouseController {
 		consignmentRepo.deLinkConsignment(consigment);
 	}
 
+	
+	@RequestMapping(value="getHistoryForBox",method=RequestMethod.GET)
+	public List<TrackingDTO> getHistoryForBox(@RequestParam(value="boxId") String boxId) {
+		List<TrackingDTO> data = consignmentRepo.getHistoryForBoxes(boxId);
+		return data;
+	}
+	
+	
+	@RequestMapping(value="getCurrentLocations",method=RequestMethod.GET)
+	public List<String> getCurrentLocations(){
+		return consignmentRepo.getCurrentLocations();
+	}
+	
+	@RequestMapping(value="getSpecificTimeLocations",method=RequestMethod.GET)
+	public List<String> getSpecificTimeLocations(@RequestParam(value="time") String time){
+		return consignmentRepo.getLocationSpecificTime(time);
+	}
+	
+	
+	
 }

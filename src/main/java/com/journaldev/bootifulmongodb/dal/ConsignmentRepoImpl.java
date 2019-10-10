@@ -1,12 +1,19 @@
 package com.journaldev.bootifulmongodb.dal;
 
-import com.journaldev.bootifulmongodb.dto.commands.TrackingDTO;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+
 import com.journaldev.bootifulmongodb.dto.commands.ConsigmentDTO;
+import com.journaldev.bootifulmongodb.dto.commands.TrackingDTO;
 
 @Repository
 public class ConsignmentRepoImpl implements ConsignmentRepo{
@@ -27,7 +34,7 @@ public class ConsignmentRepoImpl implements ConsignmentRepo{
 		}else{
 			String location = consignment.getLocation();
 			consigmentDTO.setLocation(location);
-			if(consigmentDTO.getChild() != null)
+			if(consigmentDTO.getChild() != null && !consigmentDTO.getChild().isEmpty())
 				updateChilds(consigmentDTO.getChild(), location);
 			mongoTemplate.save(consigmentDTO);
 			logTrackingMessage(consigmentDTO, "MOVE");
@@ -121,6 +128,7 @@ public class ConsignmentRepoImpl implements ConsignmentRepo{
 
 //		consigmentDTO1.setLocation(consigmentDTO.getLocation());
 
+		
 
 	}
 
@@ -202,5 +210,72 @@ public class ConsignmentRepoImpl implements ConsignmentRepo{
 		}
 
 	}
+	
+	@Override
+	public List<TrackingDTO> getHistoryForBoxes(String boxId){
+		
+		  Query query = new Query();
+		  query.addCriteria(Criteria.where("boxId").is(boxId));
+		return  mongoTemplate.find(query, TrackingDTO.class,"trackingDTO");
+		 
+	}
 
+
+	@Override
+	public List<String> getCurrentLocations() {
+		List<String> location = new ArrayList<String>();
+		List<ConsigmentDTO> consigmentDTOs = mongoTemplate.findAll(ConsigmentDTO.class,"consignment1");
+		
+		for(ConsigmentDTO consigmentDTO: consigmentDTOs) {
+			String message = consigmentDTO.getBoxId();
+			if(consigmentDTO.getParent()!=null && !consigmentDTO.getParent().isEmpty()) {
+				message+= " is inside "+consigmentDTO.getParent();
+			}
+			message += " at" + consigmentDTO.getLocation();
+			location.add(message);
+		}
+		
+		return location;
+	}
+
+
+	@Override
+	public List<String> getLocationSpecificTime(String time) {
+		
+		Query query = new Query();
+		query.addCriteria(Criteria.where("timestamp").lte(time));
+		List<TrackingDTO> trackingDTOs = mongoTemplate.find(query, TrackingDTO.class,"trackingDTO");
+		Map<String,TrackingDTO> map = new HashMap();
+		for(TrackingDTO trackingDTO : trackingDTOs) {
+			if(map.containsKey(trackingDTO.getBoxId())) {
+				if(trackingDTO.getTimestamp().compareTo(map.get(trackingDTO.getBoxId()).getTimestamp()) >0) {
+					map.put(trackingDTO.getBoxId(), trackingDTO);
+				}
+			}
+			else {
+				map.put(trackingDTO.getBoxId(), trackingDTO);
+			}
+		}
+		
+		
+		List<TrackingDTO> track = new ArrayList<TrackingDTO>();
+		
+		for (Map.Entry<String,TrackingDTO> entry : map.entrySet())  
+            track.add(entry.getValue());
+     
+		
+		List<String> locations = new ArrayList<String>();
+		for(TrackingDTO t : track) {
+			locations.add(t.getMessage());
+		}
+		return locations;
+	}
+	
+	
+	
+	
+
+	
+	
+	
 }
